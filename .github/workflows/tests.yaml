@@ -44,10 +44,8 @@ jobs:
         echo "config minikube ?"
         eval $(minikube docker-env)
         echo "Running camel kubernetes command"
-        make clean CAMEL_CMD=camel
-
+        pushd timer-log
         echo "Running smoke test on quarkus"
-        pushd quarkus/timer-log
         camel kubernetes export timer-log-route.yaml \
           --gav=examples:timer-log:1.0.0 \
           --trait container.image-pull-policy=IfNotPresent \

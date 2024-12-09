@@ -45,6 +45,13 @@ runs:
     name: Setup JBang
     uses: jbangdev/setup-jbang@main
 
+  - id: ckeck-config
+    name: Check config
+    shell: bash
+    run: |
+      cat /home/runner/.m2/settings.xml
+      cat ~/.m2/settings.xml
+
   - id: setup-citrus
     name: Setup Citrus
     shell: bash
@@ -62,7 +69,6 @@ runs:
 
       jbang camel@apache/camel --version
       jbang app install camel@apache/camel
-      camel version set 4.8.3-SNAPSHOT
 
   - id: setup-camel-kubernetes
     name: Setup Camel Kubernetes plugin
@@ -75,5 +81,5 @@ runs:
     shell: bash
     run: |
       citrus --version
-      camel --version
+      camel version
       camel plugin
