@@ -1,0 +1,88 @@
+# ---------------------------------------------------------------------------
+# Licensed to the Apache Software Foundation (ASF) under one or more
+# contributor license agreements.  See the NOTICE file distributed with
+# this work for additional information regarding copyright ownership.
+# The ASF licenses this file to You under the Apache License, Version 2.0
+# (the "License"); you may not use this file except in compliance with
+# the License.  You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+# ---------------------------------------------------------------------------
+
+name: tests-minikube-docker
+
+on:
+  schedule:
+    - cron: "30 4 * * *"
+
+env:
+  GREEN: "\e[32m"
+  ENDCOLOR: "\e[0m"
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        persist-credentials: false
+        submodules: recursive 
+    - name: Infra Java
+      uses: ./.github/actions/infra-java
+    - name: Infra Minikube
+      uses: ./.github/actions/infra-minikube-docker
+
+    - name: Run Tests
+      continue-on-error: true
+      shell: bash
+      run: |
+        echo -e "${GREEN}config minikube${ENDCOLOR}"
+        eval $(minikube docker-env)
+        echo -e "${GREEN}Running camel kubernetes command${ENDCOLOR}"
+        mkdir test
+        pushd test
+        echo -e "${GREEN}Running smoke test on quarkus${ENDCOLOR}"
+        echo -e "${GREEN}Creating route${ENDCOLOR}"
+        camel init test-with-4_9_0.camel.yaml
+        echo -e "${GREEN}Exporting project${ENDCOLOR}"
+        camel kubernetes export test-with-4_9_0.camel.yaml \
+          --build-property=quarkus.kubernetes.image-pull-policy=Never \
+          --trait container.image-pull-policy=IfNotPresent \
+          --image-registry registry.minikube \
+          --trait container.image-push=true \
+          --image-builder=docker
+        echo -e "${GREEN}Compiling project${ENDCOLOR}"
+        ./mvnw clean package
+        echo -e "${GREEN}Deploying route${ENDCOLOR}"
+        kubectl apply -f ./target/kubernetes/kubernetes.yml
+        echo -e "${GREEN}Check pods${ENDCOLOR}"
+        kubectl get pods
+        echo -e "${GREEN}Waiting pod ready${ENDCOLOR}"
+        kubectl wait --for=condition=ready pod -l app=test-with-4-9-0
+        sleep 30
+        echo -e "${GREEN}Check pod details${ENDCOLOR}"
+        kubectl describe pod -l app=test-with-4-9-0
+        echo -e "${GREEN}Testing log${ENDCOLOR}"
+        kubectl logs -l app=test-with-4-9-0 | grep -c -Ei "Hello Camel from route1"
+        echo -e "${GREEN}Clean deployment${ENDCOLOR}"
+        kubectl delete --all -f ./target/kubernetes/kubernetes.yml
+        kubectl wait --for=delete --timeout=90s pod -l app=test-with-4-9-0
+        popd
+
+    - name: Dump
+      shell: bash
+      run: |
+        echo "Dump state"
+        kubectl get pods
+        kubectl get deployments
+        kubectl get events
+        eval $(minikube docker-env)
+        docker images
