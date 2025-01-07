@@ -44,21 +44,16 @@ jobs:
         echo "config minikube ?"
         eval $(minikube docker-env)
         echo "Running camel kubernetes command"
-        pushd timer-log
+        mkdir test
+        pushd test
         echo "Running smoke test on quarkus"
-        camel kubernetes export timer-log-route.yaml \
-          --gav=examples:timer-log:1.0.0 \
-          --trait service.type=NodePort \
-          --runtime=quarkus \
-          --build-property=quarkus.kubernetes.image-pull-policy=Never \
+        camel init test-with-4_9_0.camel.yaml
+        camel kubernetes run test-with-4_9_0.camel.yaml \
           --cluster-type=minikube \
-          --trait container.image-push=true \
-          --image-registry registry.minikube \
+          --build-property=quarkus.kubernetes.image-pull-policy=Never \
+          --image-registry minikube.registry \
           --image-builder=docker
-        ./mvnw clean package
-        kubectl apply -f ./target/kubernetes/kubernetes.yml
-        kubectl wait --for=condition=ready --timeout=90s pod -l app.kubernetes.io/name=timer-log
-        kubectl logs -l app.kubernetes.io/name=timer-log | grep -c -Ei "Hello Camel from route1"
+        kubectl logs -l app=test-with-4-9-0
         popd
 
     - name: Dump
@@ -67,7 +62,6 @@ jobs:
         echo "Dump state"
         echo "Registry IP $INSTALL_REGISTRY"
         docker images
-        kubectl logs -l app.kubernetes.io/name=timer-log
         kubectl get pods -o yaml
         kubectl get deployments -o yaml
         kubectl describe pod -l app.kubernetes.io/name=timer-log
