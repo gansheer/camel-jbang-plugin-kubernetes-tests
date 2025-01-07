@@ -53,8 +53,8 @@ jobs:
         camel kubernetes run test-with-4_9_0.camel.yaml \
           --cluster-type=minikube \
           --build-property=quarkus.kubernetes.image-pull-policy=Never \
+          --trait container.image-pull-policy=IfNotPresent \
           --image-registry minikube.registry \
-          --trait container.image-push=true \
           --image-builder=docker
         kubectl get pods
         kubectl logs -l app=test-with-4-9-0
