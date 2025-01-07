@@ -33,10 +33,13 @@ runs:
       addons: registry,registry-aliases,ingress
       cpus: max
       memory: max
-      insecure-registry: '192.168.49.2:5000,10.0.0.0/24'
+      driver: docker
+      container-runtime: docker
+      insecure-registry: '192.168.49.0/24,192.168.39.0/24,10.0.0.0/24'
   - id: minikube-settings
     name: Set docker-env
     shell: bash
     run: |
       eval $(minikube -p minikube docker-env)
       docker images
+      kubectl get deployments.apps --namespace=kube-system
