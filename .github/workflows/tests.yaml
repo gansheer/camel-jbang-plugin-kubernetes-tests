@@ -65,7 +65,8 @@ jobs:
       run: |
         echo "Dump state"
         echo "Registry IP $INSTALL_REGISTRY"
-        docker images
         kubectl get pods -o yaml
         kubectl get deployments -o yaml
         kubectl describe pod -l app.kubernetes.io/name=timer-log
+        eval $(minikube docker-env)
+        docker images
