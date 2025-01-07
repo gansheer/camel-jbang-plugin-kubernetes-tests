@@ -33,7 +33,7 @@ runs:
       addons: registry,registry-aliases,ingress
       cpus: max
       memory: max
-      insecure-registry: 'localhost:5000,10.0.0.0/24'
+      insecure-registry: '192.168.49.2:5000,10.0.0.0/24'
   - id: minikube-settings
     name: Set docker-env
     shell: bash
