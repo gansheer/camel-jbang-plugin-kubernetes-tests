@@ -64,6 +64,7 @@ jobs:
           --image-builder=quarkus
         kubectl get pods
         sleep 30
+        timeout 120s stern test-with-4-9-0
         kubectl describe pod -l app=test-with-4-9-0
         kubectl wait --for=condition=ready pod -l app=test-with-4-9-0
         kubectl logs -l app=test-with-4-9-0

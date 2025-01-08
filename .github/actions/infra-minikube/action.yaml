@@ -26,6 +26,14 @@ runs:
   - id: setup-kubectl
     name: Set up Kubectl
     uses: azure/setup-kubectl@v4
+  - id: setup-stern
+    name: Set up Stern
+    shell: bash
+    run: |
+      curl -LO "https://github.com/stern/stern/releases/download/v1.31.0/stern_1.31.0_linux_amd64.tar.gz"
+      tar -zxvf stern_1.31.0_linux_amd64.tar.gz
+      chmod +x stern
+      sudo mv stern /usr/local/bin/stern
   - id: minikube-start
     name: Start minikube
     uses: medyagh/setup-minikube@v0.0.18
