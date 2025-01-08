@@ -56,7 +56,7 @@ jobs:
           --trait container.image-pull-policy=IfNotPresent \
           --image-registry minikube.registry \
           --trait container.image-push=true \
-          --image-builder=docker
+          --image-builder=jib
         kubectl get pods
         kubectl logs -l app=test-with-4-9-0
         popd
