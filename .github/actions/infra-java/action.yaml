@@ -27,7 +27,7 @@ runs:
     name: Set up JDK
     uses: actions/setup-java@v4
     with:
-      java-version: '17'
+      java-version: '21'
       distribution: 'temurin'
   - id: maven-cache
     name: Cache Maven cache
