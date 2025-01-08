@@ -64,6 +64,7 @@ jobs:
           --trait container.image-push=true \
           --image-builder=quarkus
         kubectl get pods
+        kubectl wait --for=condition=ready pod -l app=test-with-4-9-0
         kubectl logs -l app=test-with-4-9-0
         kubectl describe pod -l app=test-with-4-9-0
         popd
