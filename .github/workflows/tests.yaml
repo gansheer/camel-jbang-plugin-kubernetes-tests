@@ -61,7 +61,8 @@ jobs:
           --build-property=quarkus.kubernetes.image-pull-policy=Never \
           --image-registry test.org \
           --trait container.image-push=true \
-          --image-builder=quarkus
+          --image-builder=quarkus \
+          --build-property=jkube.container-image.from=mirror.gcr.io/library/eclipse-temurin:17
         kubectl get pods
         sleep 30
         timeout 120s stern test-with-4-9-0
