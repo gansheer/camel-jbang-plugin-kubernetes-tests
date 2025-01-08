@@ -54,9 +54,9 @@ jobs:
           --cluster-type=minikube \
           --build-property=quarkus.kubernetes.image-pull-policy=Never \
           --trait container.image-pull-policy=IfNotPresent \
-          --image-registry minikube.registry \
+          --image-registry test.org \
           --trait container.image-push=true \
-          --image-builder=jib
+          --image-builder=quarkus
         kubectl get pods
         kubectl logs -l app=test-with-4-9-0
         popd
