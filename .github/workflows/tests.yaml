@@ -78,6 +78,8 @@ jobs:
         echo "Registry IP $INSTALL_REGISTRY"
         kubectl get pods
         kubectl describe pod -l app=test-with-4-9-0
+        kubectl get events
+        kubectl describe deployment test-with-4-9-0
         kubectl get pods -o yaml
         kubectl get deployments -o yaml
         kubectl describe pod -l app.kubernetes.io/name=timer-log
