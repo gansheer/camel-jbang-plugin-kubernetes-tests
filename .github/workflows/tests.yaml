@@ -86,3 +86,4 @@ jobs:
         kubectl describe pod -l app.kubernetes.io/name=timer-log
         eval $(minikube docker-env)
         docker images
+        docker manifest inspect test.org/test-with-4-9-0:1.0-SNAPSHOT
