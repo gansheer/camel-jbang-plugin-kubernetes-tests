@@ -59,7 +59,7 @@ jobs:
         camel kubernetes run test-with-4_9_0.camel.yaml \
           --cluster-type=minikube \
           --build-property=quarkus.kubernetes.image-pull-policy=Never \
-          --image-registry test.org \
+          --image-registry $INSTALL_REGISTRY \
           --trait container.image-push=true \
           --image-builder=docker \
           --build-property=jkube.container-image.from=mirror.gcr.io/library/eclipse-temurin:21
