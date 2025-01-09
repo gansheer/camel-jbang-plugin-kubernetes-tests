@@ -37,7 +37,18 @@ jobs:
       with:
         persist-credentials: false
         submodules: recursive
-
+    - name: Set up Docker
+      uses: docker/setup-docker-action@v4
+      with:
+        daemon-config: |
+          {
+            "debug": true,
+            "features": {
+              "containerd-snapshotter": true
+            }
+          }   
+    - name: Set up QEMU
+      uses: docker/setup-qemu-action@v3
     - name: Infra Java
       uses: ./.github/actions/infra-java
     - name: Infra Minikube
@@ -52,24 +63,22 @@ jobs:
         echo "check minikube dns"
         minikube ssh -- cat /etc/hosts
         echo "Running camel kubernetes command"
-        mkdir test
-        pushd test
+        pushd timer-log
         echo "Running smoke test on quarkus"
-        camel init test-with-4_9_0.camel.yaml
-        camel kubernetes run test-with-4_9_0.camel.yaml \
-          --cluster-type=minikube \
+        camel kubernetes run timer-log-route.yaml \
           --build-property=quarkus.kubernetes.image-pull-policy=Never \
-          --image-registry $INSTALL_REGISTRY \
+          --trait container.image-pull-policy=IfNotPresent \
+          --image-registry registry.minikube \
           --trait container.image-push=true \
-          --image-builder=docker \
-          --build-property=jkube.container-image.from=mirror.gcr.io/library/eclipse-temurin:21
+          --image-builder=docker
         kubectl get pods
         sleep 30
-        timeout 120s stern test-with-4-9-0
-        kubectl describe pod -l app=test-with-4-9-0
-        kubectl wait --for=condition=ready pod -l app=test-with-4-9-0
-        kubectl logs -l app=test-with-4-9-0
-        kubectl describe pod -l app=test-with-4-9-0
+        timeout 120s stern timer-log-route
+        kubectl describe pod -l app=timer-log-route
+        kubectl wait --for=condition=ready pod -l app=timer-log-route
+        kubectl logs -l app=timer-log-route
+        kubectl describe pod -l app=timer-log-route
+        docker images inspect registry.minikube/timer-log-route:1.0-SNAPSHOT
         popd
 
     - name: Dump
@@ -78,12 +87,11 @@ jobs:
         echo "Dump state"
         echo "Registry IP $INSTALL_REGISTRY"
         kubectl get pods
-        kubectl describe pod -l app=test-with-4-9-0
+        kubectl describe pod -l app=timer-log-route
         kubectl get events
-        kubectl describe deployment test-with-4-9-0
+        kubectl describe deployment timer-log-route
         kubectl get pods -o yaml
         kubectl get deployments -o yaml
         kubectl describe pod -l app.kubernetes.io/name=timer-log
         eval $(minikube docker-env)
         docker images
-        docker manifest inspect test.org/test-with-4-9-0:1.0-SNAPSHOT
