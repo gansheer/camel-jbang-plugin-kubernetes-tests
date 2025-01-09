@@ -49,7 +49,5 @@ runs:
     shell: bash
     run: |
       eval $(minikube -p minikube docker-env)
-      echo "INSTALL_REGISTRY=$(kubectl -n kube-system get service registry -o jsonpath='{.spec.clusterIP}')" >> $GITHUB_ENV
-      echo "Setting registry as $INSTALL_REGISTRY which is required by certain tests"
       docker images
       kubectl get deployments.apps --namespace=kube-system
