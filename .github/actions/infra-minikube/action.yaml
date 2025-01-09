@@ -43,7 +43,7 @@ runs:
       memory: max
       driver: docker
       container-runtime: docker
-      insecure-registry: '192.168.49.0/24,192.168.39.0/24,10.0.0.0/24,10.96.0.0/12'
+      insecure-registry: '10.0.0.0/24'
   - id: minikube-settings
     name: Set docker-env
     shell: bash
