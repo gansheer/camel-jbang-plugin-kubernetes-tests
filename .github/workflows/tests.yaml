@@ -45,8 +45,6 @@ jobs:
       run: |
         echo "config minikube"
         eval $(minikube docker-env)
-        echo "check minikube dns"
-        minikube ssh -- cat /etc/hosts
         echo "Running camel kubernetes command"
         pushd timer-log
         echo "Running smoke test on quarkus"
