@@ -32,8 +32,6 @@ jobs:
       with:
         persist-credentials: false
         submodules: recursive 
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
     - name: Infra Java
       uses: ./.github/actions/infra-java
     - name: Infra Minikube
@@ -68,13 +66,8 @@ jobs:
       shell: bash
       run: |
         echo "Dump state"
-        echo "Registry IP $INSTALL_REGISTRY"
         kubectl get pods
-        kubectl describe pod -l app=timer-log-route
+        kubectl get deployments
         kubectl get events
-        kubectl describe deployment timer-log-route
-        kubectl get pods -o yaml
-        kubectl get deployments -o yaml
-        kubectl describe pod -l app.kubernetes.io/name=timer-log
         eval $(minikube docker-env)
         docker images
