@@ -41,7 +41,7 @@ runs:
     name: Start minikube
     uses: medyagh/setup-minikube@v0.0.18
     with:
-      addons: registry,registry-aliases,ingress
+      addons: registry,registry-aliases
       cpus: max
       memory: max
       driver: docker
