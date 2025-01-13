@@ -22,6 +22,10 @@ on:
     branches:
       - github-action-e2e
 
+env:
+  GREEN: "\e[32m"
+  ENDCOLOR: "\e[0m"
+
 jobs:
   tests:
     runs-on: ubuntu-latest
@@ -41,27 +45,37 @@ jobs:
       continue-on-error: true
       shell: bash
       run: |
-        echo "config minikube"
+        echo -e "${GREEN}config minikube${ENDCOLOR}"
         eval $(minikube docker-env)
-        echo "Running camel kubernetes command"
+        echo - "${GREEN}Running camel kubernetes command${ENDCOLOR}"
         mkdir test
         pushd test
-        echo "Running smoke test on quarkus"
+        echo -e "${GREEN}Running smoke test on quarkus${ENDCOLOR}"
+        echo -e "${GREEN}Creating route${ENDCOLOR}"
         camel init test-with-4_9_0.camel.yaml
-        camel kubernetes run test-with-4_9_0.camel.yaml \
+        echo -e "${GREEN}Exporting project${ENDCOLOR}"
+        camel kubernetes export test-with-4_9_0.camel.yaml \
           --build-property=quarkus.kubernetes.image-pull-policy=Never \
           --trait container.image-pull-policy=IfNotPresent \
           --image-registry registry.minikube \
           --trait container.image-push=true \
           --image-builder=docker
+        echo -e "${GREEN}Compiling project${ENDCOLOR}"
+        ./mvnw clean package
+        echo -e "${GREEN}Deploying route${ENDCOLOR}"
+        kubectl apply -f ./target/kubernetes/kubernetes.yml
+        echo -e "${GREEN}Check pods${ENDCOLOR}"
         kubectl get pods
-        sleep 30
-        timeout 120s stern test-with-4-9-0
-        kubectl describe pod -l app=test-with-4-9-0
+        echo -e "${GREEN}Waiting pod ready${ENDCOLOR}"
         kubectl wait --for=condition=ready pod -l app=test-with-4-9-0
-        kubectl logs -l app=test-with-4-9-0
+        sleep 30
+        echo -e "${GREEN}Check pod details${ENDCOLOR}"
         kubectl describe pod -l app=test-with-4-9-0
-        docker images inspect registry.minikube/test-with-4-9-0:1.0-SNAPSHOT
+        echo -e "${GREEN}Testing log${ENDCOLOR}"
+        kubectl logs -l app=test-with-4-9-0 | grep -c -Ei "Hello Camel from route1"
+        echo -e "${GREEN}Clean deployment${ENDCOLOR}"
+        kubectl delete --all -f ./target/kubernetes/kubernetes.yml
+        kubectl wait --for=delete --timeout=90s pod -l app=test-with-4-9-0
         popd
 
     - name: Dump
