@@ -44,9 +44,11 @@ jobs:
         echo "config minikube"
         eval $(minikube docker-env)
         echo "Running camel kubernetes command"
-        pushd timer-log
+        mkdir test
+        pushd test
         echo "Running smoke test on quarkus"
-        camel kubernetes run timer-log-route.yaml \
+        camel init test-with-4_9_0.camel.yaml
+        camel kubernetes run test-with-4_9_0.camel.yaml \
           --build-property=quarkus.kubernetes.image-pull-policy=Never \
           --trait container.image-pull-policy=IfNotPresent \
           --image-registry registry.minikube \
@@ -54,12 +56,12 @@ jobs:
           --image-builder=docker
         kubectl get pods
         sleep 30
-        timeout 120s stern timer-log-route
-        kubectl describe pod -l app=timer-log-route
-        kubectl wait --for=condition=ready pod -l app=timer-log-route
-        kubectl logs -l app=timer-log-route
-        kubectl describe pod -l app=timer-log-route
-        docker images inspect registry.minikube/timer-log-route:1.0-SNAPSHOT
+        timeout 120s stern test-with-4-9-0
+        kubectl describe pod -l app=test-with-4-9-0
+        kubectl wait --for=condition=ready pod -l app=test-with-4-9-0
+        kubectl logs -l app=test-with-4-9-0
+        kubectl describe pod -l app=test-with-4-9-0
+        docker images inspect registry.minikube/test-with-4-9-0:1.0-SNAPSHOT
         popd
 
     - name: Dump
