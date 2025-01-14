@@ -15,7 +15,7 @@
 # limitations under the License.
 # ---------------------------------------------------------------------------
 
-name: tests
+name: tests-minikube-podman
 
 on:
   push:
@@ -38,16 +38,20 @@ jobs:
         submodules: recursive 
     - name: Infra Java
       uses: ./.github/actions/infra-java
+    - name: Check podman
+      shell: bash
+      run: |
+        podman info
     - name: Infra Minikube
-      uses: ./.github/actions/infra-minikube
-
+      uses: ./.github/actions/infra-minikube-podman
+  
     - name: Run Tests
       continue-on-error: true
       shell: bash
       run: |
         echo -e "${GREEN}config minikube${ENDCOLOR}"
-        eval $(minikube docker-env)
-        echo - "${GREEN}Running camel kubernetes command${ENDCOLOR}"
+        eval $(minikube -p minikube podman-env)
+        echo -e "${GREEN}Running camel kubernetes command${ENDCOLOR}"
         mkdir test
         pushd test
         echo -e "${GREEN}Running smoke test on quarkus${ENDCOLOR}"
@@ -59,7 +63,7 @@ jobs:
           --trait container.image-pull-policy=IfNotPresent \
           --image-registry registry.minikube \
           --trait container.image-push=true \
-          --image-builder=docker
+          --image-builder=podman
         echo -e "${GREEN}Compiling project${ENDCOLOR}"
         ./mvnw clean package
         echo -e "${GREEN}Deploying route${ENDCOLOR}"
@@ -85,5 +89,5 @@ jobs:
         kubectl get pods
         kubectl get deployments
         kubectl get events
-        eval $(minikube docker-env)
-        docker images
+        eval $(minikube podman-env)
+        podman images
