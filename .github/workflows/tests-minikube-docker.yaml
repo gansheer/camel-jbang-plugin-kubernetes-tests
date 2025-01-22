@@ -20,7 +20,9 @@ name: tests-minikube-docker
 on:
   schedule:
     - cron: "30 4 * * *"
-
+  push:
+    branches:
+      - check_multi_platform_build
 env:
   GREEN: "\e[32m"
   ENDCOLOR: "\e[0m"
@@ -59,6 +61,12 @@ jobs:
           --image-registry registry.minikube \
           --trait container.image-push=true \
           --image-builder=docker
+        cat pom.xml
+        sed -i 's/<createImageOptions>//' pom.xml
+        sed -i 's/<\/createImageOptions>//' pom.xml
+        sed -i 's/<platform>linux\/amd64<\/platform>//' pom.xml
+        sed -i 's/<platform>linux\/arm64<\/platform>//' pom.xml
+        cat pom.xml
         echo -e "${GREEN}Compiling project${ENDCOLOR}"
         ./mvnw clean package
         echo -e "${GREEN}Deploying route${ENDCOLOR}"

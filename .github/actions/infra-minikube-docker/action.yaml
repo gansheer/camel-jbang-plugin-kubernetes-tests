@@ -23,9 +23,6 @@ runs:
   using: "composite"
 
   steps:
-  - id:  setup-docker-qemu
-    name: Set up QEMU
-    uses: docker/setup-qemu-action@v3
   - id: setup-kubectl
     name: Set up Kubectl
     uses: azure/setup-kubectl@v4
