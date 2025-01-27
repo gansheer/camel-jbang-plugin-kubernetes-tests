@@ -28,7 +28,13 @@ env:
 jobs:
   tests:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        camel: 
+        - version: "main"
+          command: "jbang camel-main"
+        - version: "last-release"
+          command: "camel"
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -37,6 +43,9 @@ jobs:
         submodules: recursive 
     - name: Infra Java
       uses: ./.github/actions/infra-java
+      with:
+        camel-version: ${{ matrix.camel.version }}
+        camel-command: ${{ matrix.camel.command }}
     - name: Infra Minikube
       uses: ./.github/actions/infra-minikube-docker
 
@@ -51,9 +60,9 @@ jobs:
         pushd test
         echo -e "${GREEN}Running smoke test on quarkus${ENDCOLOR}"
         echo -e "${GREEN}Creating route${ENDCOLOR}"
-        camel init test-with-4_9_0.camel.yaml
+        ${{ matrix.camel.command }} init test-with-4_9_0.camel.yaml
         echo -e "${GREEN}Exporting project${ENDCOLOR}"
-        camel kubernetes export test-with-4_9_0.camel.yaml \
+        ${{ matrix.camel.command }} kubernetes export test-with-4_9_0.camel.yaml \
           --build-property=quarkus.kubernetes.image-pull-policy=Never \
           --trait container.image-pull-policy=IfNotPresent \
           --image-registry registry.minikube \

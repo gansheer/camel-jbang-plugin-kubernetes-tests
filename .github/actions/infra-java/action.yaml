@@ -19,6 +19,16 @@
 name: infra-java
 description: 'Setting CI java'
 
+inputs:
+  camel-version:
+    description: The camel version used main or last-release
+    required: false
+    default: 'last-release'
+  camel-command:
+    description: The camel command used
+    required: false
+    default: 'camel'
+
 runs:
   using: "composite"
 
@@ -62,7 +72,8 @@ runs:
       jbang app install citrus@citrusframework/citrus
 
   - id: setup-camel
-    name: Setup Camel
+    name: Setup Last Camel Release
+    if: ${{ inputs.camel-version == 'last-release' }}
     shell: bash
     run: |
       jbang trust add https://github.com/apache/camel/
@@ -70,16 +81,37 @@ runs:
       jbang camel@apache/camel --version
       jbang app install camel@apache/camel
 
+  - id: checkout-camel-main
+    name: Checkout Apache Camel repo
+    if: ${{ inputs.camel-version == 'main' }}
+    uses: actions/checkout@v4
+    with:
+      repository: apache/camel
+      path: camel
+
+  - id: setup-camel-main
+    name: Setup Camel from repo
+    if: ${{ inputs.camel-version == 'main' }}
+    shell: bash
+    run: |
+      pushd camel
+      echo "Current Camel commit:" $(git rev-parse HEAD)
+      ./mvnw ${CQ_MAVEN_ARGS} clean install -Dquickly -T1C
+      popd
+
+      cat camel/dsl/camel-jbang/camel-jbang-main/dist/CamelJBang.java
+      jbang alias add --name camel-main -Dcamel.jbang.version=4.10.0-SNAPSHOT ./camel/dsl/camel-jbang/camel-jbang-main/dist/CamelJBang.java
+
   - id: setup-camel-kubernetes
     name: Setup Camel Kubernetes plugin
     shell: bash
     run: |
-      camel plugin add kubernetes
+      ${{ inputs.camel-command }} plugin add kubernetes
 
   - id: check-setup
     name: Check setup
     shell: bash
     run: |
       citrus --version
-      camel version
-      camel plugin
+      ${{ inputs.camel-command }} version
+      ${{ inputs.camel-command }} plugin
