@@ -1,0 +1,45 @@
+name: "test-minikube-yaml"
+description: "Smoke test for camel jbang kubernetes on Minikube using citrus yaml"
+author: "Gaelle"
+
+actions:
+  - camel:
+      jbang:
+        plugin:
+          add:
+            name: kubernetes
+            args:
+              - "--command"
+              - "kubernetes"
+  - camel:
+      jbang:
+        plugin:
+          kubernetes:
+            run:
+              integration:
+                file: "../route.yaml"
+              runtime: "quarkus"
+              imageRegistry: "registry.minikube"
+              imageBuilder: "docker"
+              buildProperties:
+                - "quarkus.kubernetes.image-pull-policy=Never"
+              properties:
+                - "greeting=\"Hello Camel\""
+              traits:
+                - "container.image-pull-policy=IfNotPresent"
+                - "container.image-push=true"
+  - camel:
+      jbang:
+        plugin:
+          kubernetes:
+            verify:
+              label: "app=route"
+              logMessage: "HELLO CAMEL #10"
+finally:
+  - camel:
+      jbang:
+        plugin:
+          kubernetes:
+            delete:
+              integration:
+                file: "../route.yaml"
