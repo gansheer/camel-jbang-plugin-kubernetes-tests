@@ -1,0 +1,46 @@
+name: route-camel-test
+description: Smoke test
+
+actions:
+  - camel:
+      jbang:
+        plugin:
+          add:
+            name: kubernetes
+            args:
+              - "--command"
+              - "kubernetes"
+  - camel:
+      jbang:
+        plugin:
+          kubernetes:
+            export:
+              integration:
+                file: "../integration/route.yaml"
+              imageRegistry: "registry.minikube"
+              imageBuilder: "docker"
+              buildProperties:
+                - "quarkus.kubernetes.image-pull-policy=Never"
+              traits:
+                - "container.image-pull-policy=IfNotPresent"
+                - "container.image-push=true"
+              args:
+                - "--runtime"
+                - "quarkus"
+                - "--property"
+                - "greeting=Hello Camel"
+  - kubernetes:
+      client: "k8sClient"
+      namespace: "default"
+      verifyPod:
+        label: "app=route"
+        phase: "Running"
+
+finally:
+  - camel:
+      jbang:
+        plugin:
+          kubernetes:
+            delete:
+              integration:
+                file: "../integration/route.yaml"

@@ -1,0 +1,19 @@
+name: route-camel-test
+description: Smoke test
+
+
+actions:
+  - groovy:
+      beans:
+        script: |
+          beans {
+            k8sClient = new io.fabric8.kubernetes.client.KubernetesClientBuilder().build()
+          }
+
+  - kubernetes:
+      client: "k8sClient"
+      namespace: "default"
+      verifyPod:
+        label: "app=route"
+        phase: "Running"
+
