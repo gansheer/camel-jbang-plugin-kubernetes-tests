@@ -28,6 +28,14 @@ inputs:
     description: The camel command used
     required: false
     default: 'camel'
+  citrus-version:
+    description: The citrus version used main or last-release
+    required: false
+    default: 'last-release'
+  citrus-command:
+    description: The citrus command used
+    required: false
+    default: 'citrus'
 
 runs:
   using: "composite"
@@ -63,13 +71,34 @@ runs:
       cat ~/.m2/settings.xml
 
   - id: setup-citrus
-    name: Setup Citrus
+    name: Setup Last Citrus Release
+    if: ${{ inputs.citrus-version == 'last-release' }}
     shell: bash
     run: |
       jbang trust add https://github.com/citrusframework/citrus/
 
       jbang citrus@citrusframework/citrus --version
       jbang app install citrus@citrusframework/citrus
+
+  - id: checkout-citrus-main
+    name: Checkout Citrus repo
+    if: ${{ inputs.citrus-version == 'main' }}
+    uses: actions/checkout@v4
+    with:
+      repository: citrusframework/citrus
+      path: citrus
+
+  - id: setup-citrus-main
+    name: Setup Citrus from repo
+    if: ${{ inputs.citrus-version == 'main' }}
+    shell: bash
+    run: |
+      pushd citrus
+      echo "Current Citrus commit:" $(git rev-parse HEAD)
+      ./mvnw clean install -DskipTests=true -Dtest -Dit.test
+      popd
+
+      jbang alias add --name citrus-main ./citrus/tools/jbang/src/main/java/main/CitrusJBang.java
 
   - id: setup-camel
     name: Setup Last Camel Release
@@ -96,10 +125,9 @@ runs:
     run: |
       pushd camel
       echo "Current Camel commit:" $(git rev-parse HEAD)
-      ./mvnw ${CQ_MAVEN_ARGS} clean install -Dquickly -T1C
+      ./mvnw clean install -Dquickly -T1C
       popd
 
-      cat camel/dsl/camel-jbang/camel-jbang-main/dist/CamelJBang.java
       jbang alias add --name camel-main -Dcamel.jbang.version=4.10.0-SNAPSHOT ./camel/dsl/camel-jbang/camel-jbang-main/dist/CamelJBang.java
 
   - id: setup-camel-kubernetes
@@ -112,6 +140,6 @@ runs:
     name: Check setup
     shell: bash
     run: |
-      citrus --version
+      ${{ inputs.citrus-command }} --version
       ${{ inputs.camel-command }} version
       ${{ inputs.camel-command }} plugin

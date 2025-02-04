@@ -1,13 +1,9 @@
-name: route-camel-test
-description: Smoke test
+name: "test-minikube-yaml"
+description: "Smoke test for camel jbang kubernetes on Minikube using citrus yaml"
+author: "Gaelle"
+status: "4.6.0-SNAPSHOT"
 
 actions:
-  - groovy:
-      beans:
-        script: |
-          beans {
-            k8sClient = new io.fabric8.kubernetes.client.KubernetesClientBuilder().build()
-          }
   - camel:
       jbang:
         plugin:
@@ -20,28 +16,19 @@ actions:
       jbang:
         plugin:
           kubernetes:
-            export:
+            run:
               integration:
                 file: "../route.yaml"
+              runtime: "quarkus"
               imageRegistry: "registry.minikube"
               imageBuilder: "docker"
               buildProperties:
                 - "quarkus.kubernetes.image-pull-policy=Never"
+              properties:
+                - "greeting=\"Hello Camel\""
               traits:
                 - "container.image-pull-policy=IfNotPresent"
                 - "container.image-push=true"
-              args:
-                - "--runtime"
-                - "quarkus"
-                - "--wait"
-                - "--property"
-                - "greeting=\"Hello Camel\""
-  - kubernetes:
-      client: "k8sClient"
-      namespace: "default"
-      verifyPod:
-        label: "app=route"
-        phase: "Running"
   - camel:
       jbang:
         plugin:

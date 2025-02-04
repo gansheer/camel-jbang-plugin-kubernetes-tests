@@ -46,6 +46,8 @@ jobs:
       with:
         camel-version: ${{ matrix.camel.version }}
         camel-command: ${{ matrix.camel.command }}
+        citrus-version: "main"
+        citrus-command: "jbang citrus-main"
     - name: Infra Minikube
       uses: ./.github/actions/infra-minikube-docker
 
@@ -85,6 +87,14 @@ jobs:
         kubectl delete --all -f ./target/kubernetes/kubernetes.yml
         kubectl wait --for=delete --timeout=90s pod -l app=test-with-4-9-0
         popd
+    
+    - name: Run Citrus Tests
+      continue-on-error: true
+      shell: bash
+      run: |
+        echo -e "${GREEN}config minikube${ENDCOLOR}"
+        eval $(minikube docker-env)
+        echo "todo"
 
     - name: Dump
       shell: bash
