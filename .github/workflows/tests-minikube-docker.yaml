@@ -60,9 +60,9 @@ jobs:
         pushd test
         echo -e "${GREEN}Running smoke test on quarkus${ENDCOLOR}"
         echo -e "${GREEN}Creating route${ENDCOLOR}"
-        ${{ matrix.camel.command }} init test-with-4_9_0.camel.yaml
+        ${{ matrix.camel.command }} init test-with-jbang.camel.yaml
         echo -e "${GREEN}Exporting project${ENDCOLOR}"
-        ${{ matrix.camel.command }} kubernetes export test-with-4_9_0.camel.yaml \
+        ${{ matrix.camel.command }} kubernetes export test-with-jbang.camel.yaml \
           --build-property=quarkus.kubernetes.image-pull-policy=Never \
           --trait container.image-pull-policy=IfNotPresent \
           --image-registry registry.minikube \
@@ -75,15 +75,15 @@ jobs:
         echo -e "${GREEN}Check pods${ENDCOLOR}"
         kubectl get pods
         echo -e "${GREEN}Waiting pod ready${ENDCOLOR}"
-        kubectl wait --for=condition=ready pod -l app=test-with-4-9-0
+        kubectl wait --for=condition=ready pod -l app=test-with-jbang
         sleep 30
         echo -e "${GREEN}Check pod details${ENDCOLOR}"
-        kubectl describe pod -l app=test-with-4-9-0
+        kubectl describe pod -l app=test-with-jbang
         echo -e "${GREEN}Testing log${ENDCOLOR}"
-        kubectl logs -l app=test-with-4-9-0 | grep -c -Ei "Hello Camel from route1"
+        kubectl logs -l app=test-with-jbang | grep -c -Ei "Hello Camel from route1"
         echo -e "${GREEN}Clean deployment${ENDCOLOR}"
         kubectl delete --all -f ./target/kubernetes/kubernetes.yml
-        kubectl wait --for=delete --timeout=90s pod -l app=test-with-4-9-0
+        kubectl wait --for=delete --timeout=90s pod -l app=test-with-jbang
         popd
 
     - name: Dump
