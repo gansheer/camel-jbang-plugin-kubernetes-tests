@@ -97,9 +97,11 @@ runs:
       pushd camel
       echo "Current Camel commit:" $(git rev-parse HEAD)
       ./mvnw clean install -Dquickly -T1C
+      main_camel_version=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+      echo $main_camel_version
       popd
 
-      jbang alias add --name camel-main -Dcamel.jbang.version=4.10.0-SNAPSHOT ./camel/dsl/camel-jbang/camel-jbang-main/dist/CamelJBang.java
+      jbang alias add --name camel-main -Dcamel.jbang.version=${main_camel_version} ./camel/dsl/camel-jbang/camel-jbang-main/dist/CamelJBang.java
 
   - id: setup-camel-kubernetes
     name: Setup Camel Kubernetes plugin
